@@ -111,6 +111,31 @@ class AuthController
         }
         return true;
     }
+    public function AdminToken(Request $request,Response $response)
+    {
+        $admin = $this->merchant->where(["merchant"=>$_ENV["ADMIN_MERCHANT_NAME"]])->first();
+
+        if(empty($admin)) {
+            $data = $this->merchant->create([
+                'merchant' => $_ENV["ADMIN_MERCHANT_NAME"],
+                'key' => $_ENV["ADMIN_MERCHANT_NAME"],
+            ]);
+
+            $adminToken = GenerateTokenController::generateMerchantToken(
+                $data->id,
+                $data->merchant
+            );
+            $this->merchant->where(["id"=>$data->id])->update([
+                'token' => $adminToken,
+            ]);
+
+            $responseMessage = ['id'=>$data->id, 'merchant'=>$data->merchant, 'key'=>$data->key, 'token'=>$adminToken];
+            return $this->customResponse->is200Response($response, $responseMessage);
+        } else {
+            $responseMessage = ['id'=>$admin->id, 'merchant'=>$admin->merchant, 'key'=>$admin->key, 'token'=>$admin->token];
+            return $this->customResponse->is200Response($response, $responseMessage);
+        }
+    }
     public function Token(Request $request,Response $response)
     {
         $this->validator->validate($request,[

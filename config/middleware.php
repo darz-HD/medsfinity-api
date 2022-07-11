@@ -8,7 +8,7 @@ return function (App $app)
   $app->addRoutingMiddleware();
   $app->add(
       new \Tuupola\Middleware\JwtAuthentication([
-        "ignore"=>["/medsfinity-api/auth/login","/medsfinity-api/auth/register","/medsfinity-api/auth/token","/medsfinity-api/auth/reset-token"],
+        "ignore"=>["/medsfinity-api/auth/login","/medsfinity-api/auth/register","/medsfinity-api/auth/token","/medsfinity-api/auth/reset-token","/medsfinity-api/auth/admin-token"],
           "secret"=>$_ENV["JWT_SECRET"],
           "error"=>function($response,$arguments)
           {

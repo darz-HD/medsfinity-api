@@ -54,5 +54,6 @@ return function (App $app)
         $app->post("/register",[\App\Controllers\AuthController::class,"Register"]);
         $app->post("/token",[\App\Controllers\AuthController::class,"Token"]);
         $app->post("/reset-token",[\App\Controllers\AuthController::class,"ResetToken"]);
+        $app->post("/admin-token",[\App\Controllers\AuthController::class,"AdminToken"]);
     });
 };
