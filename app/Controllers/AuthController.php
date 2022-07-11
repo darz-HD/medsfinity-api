@@ -3,6 +3,7 @@
 namespace  App\Controllers;
 
 use App\Models\User;
+use App\Models\Merchant;
 use App\Requests\CustomRequestHandler;
 use App\Response\CustomResponse;
 use App\Validation\Validator;
@@ -20,6 +21,7 @@ class AuthController
     public function __construct()
     {
         $this->user = new User();
+        $this->merchant = new Merchant();
         $this->customResponse = new CustomResponse();
         $this->validator = new Validator();
     }
@@ -34,8 +36,6 @@ class AuthController
         "email"=>v::notEmpty()->email(),
         "password"=>v::notEmpty(),
         "status"=>v::notEmpty(),
-        "created_at"=>v::notEmpty(),
-        "updated_at"=>v::notEmpty()
        ]);
 
        if($this->validator->failed())
@@ -59,16 +59,12 @@ class AuthController
         'email' => CustomRequestHandler::getParam($request, "email"),
         "password"=>$passwordHash,
         'status' => CustomRequestHandler::getParam($request, "status"),
-        'created_at' => CustomRequestHandler::getParam($request, "created_at"),
-        'updated_at' => CustomRequestHandler::getParam($request, "updated_at"),
        ]);
 
        $responseMessage = "new user created successfully";
 
        return $this->customResponse->is200Response($response,$responseMessage);
     }
-
-
 
     public function Login(Request $request,Response $response)
     {
@@ -91,13 +87,14 @@ class AuthController
             $responseMessage = "invalid username or password";
             return $this->customResponse->is400Response($response,$responseMessage);
         } else {
-            $responseMessage = GenerateTokenController::generateToken(
+            $user = $this->user->where(["email"=>CustomRequestHandler::getParam($request,"email")])->first();
+            $responseMessage = GenerateTokenController::generateLoginToken(
+                $user->id,
                 CustomRequestHandler::getParam($request,"email")
             );
             return $this->customResponse->is200Response($response,$responseMessage);
         }
     }
-
     public function verifyAccount($password,$email)
     {
         $count = $this->user->where(["email"=>$email])->count();
@@ -108,6 +105,93 @@ class AuthController
         $user = $this->user->where(["email"=>$email])->first();
         $hashedPassword = $user->password;
         $verify = password_verify($password,$hashedPassword);
+        if($verify==false)
+        {
+            return false;
+        }
+        return true;
+    }
+    public function Token(Request $request,Response $response)
+    {
+        $this->validator->validate($request,[
+            "merchant"=>v::notEmpty(),
+            "key"=>v::notEmpty()
+        ]);
+        if($this->validator->failed())
+        {
+            $responseMessage = $this->validator->errors;
+            return $this->customResponse->is400Response($response,$responseMessage);
+        }
+        $verifyMerchant = $this->verifyMerchant(
+            CustomRequestHandler::getParam($request,"merchant"),
+            CustomRequestHandler::getParam($request,"key"));
+            
+        if($verifyMerchant==false)
+        {
+            $responseMessage = "invalid merchant";
+            return $this->customResponse->is400Response($response,$responseMessage);
+        } else {
+            $merchant = $this->merchant->where(["merchant"=>CustomRequestHandler::getParam($request,"merchant")])->first();
+            // check if merchant already has token
+            $token = $merchant->token;
+            if (empty($token))
+            {
+                $responseMessage = GenerateTokenController::generateMerchantToken(
+                    $merchant->id,
+                    CustomRequestHandler::getParam($request,"merchant")
+                );
+                $this->merchant->where(["merchant"=>CustomRequestHandler::getParam($request,"merchant")])->update([
+                    'token' => $responseMessage,
+                ]);
+            } else {
+                $responseMessage = $token;
+            }
+            
+            return $this->customResponse->is200Response($response,$responseMessage);
+        }
+    }
+    public function ResetToken(Request $request,Response $response)
+    {
+        $this->validator->validate($request,[
+            "merchant"=>v::notEmpty(),
+            "key"=>v::notEmpty()
+        ]);
+        if($this->validator->failed())
+        {
+            $responseMessage = $this->validator->errors;
+            return $this->customResponse->is400Response($response,$responseMessage);
+        }
+        $verifyMerchant = $this->verifyMerchant(
+            CustomRequestHandler::getParam($request,"merchant"),
+            CustomRequestHandler::getParam($request,"key"));
+            
+        if($verifyMerchant==false)
+        {
+            $responseMessage = "invalid merchant";
+            return $this->customResponse->is400Response($response,$responseMessage);
+        } else {
+            $merchant = $this->merchant->where(["merchant"=>CustomRequestHandler::getParam($request,"merchant")])->first();
+            $responseMessage = GenerateTokenController::generateMerchantToken(
+                $merchant->id,
+                CustomRequestHandler::getParam($request,"merchant")
+            );
+            $this->merchant->where(["merchant"=>CustomRequestHandler::getParam($request,"merchant")])->update([
+                'token' => $responseMessage,
+            ]);
+            return $this->customResponse->is200Response($response,$responseMessage);
+        }
+    }
+    public function verifyMerchant($merchant, $key)
+    {
+        $count = $this->merchant->where(["merchant"=>$merchant])->count();
+        if($count==0)
+        {
+            return false;
+        }
+        // $merchant = $this->merchant->where(["merchant"=>$merchant])->first();
+        // $hashedKey = $merchant->key;
+        // $verify = password_verify($key,$hashedKey);
+        $verify = $this->merchant->where(["merchant"=>$merchant, "key"=>$key])->first();
         if($verify==false)
         {
             return false;

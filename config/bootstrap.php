@@ -15,7 +15,7 @@ $settings($container);
 
 $app = SlimAppFactory::create($container);
 
-$app->setBasePath("/api");
+$app->setBasePath("/medsfinity-api");
 
 $middleware = require_once __DIR__ . '/middleware.php';
 

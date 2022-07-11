@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Models\Doctor;
+use App\Models\Pharmacy;
 use App\Response\CustomResponse;
 use App\Requests\CustomRequestHandler;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -11,23 +11,23 @@ use App\Validation\Validator;
 use Respect\Validation\Exceptions\NestedValidationException;
 use Respect\Validation\Validator as v;
 
-class DoctorController
+class PharmacyController
 {
 
     protected $customResponse;
 
-    protected $doctorEntry;
+    protected $pharmacyEntry;
 
     protected $validator;
 
     public function __construct()
     {
         $this->customResponse = new CustomResponse();
-        $this->doctor = new Doctor;
+        $this->pharmacy = new Pharmacy;
         $this->validator = new Validator();
     }
     public function index(Response $response) {
-        $responseMessage = $this->doctor->get();
+        $responseMessage = $this->pharmacy->get();
         return $this->customResponse->is200Response($response, $responseMessage);
     }
 
@@ -40,11 +40,15 @@ class DoctorController
             "middle_initial"=>v::notEmpty(),
             "last_name"=>v::notEmpty(),
             "email"=>v::notEmpty()->email(),
-            "birth_date"=>v::notEmpty(),
             "contact_number"=>v::notEmpty(),
-            "specialty"=>v::notEmpty(),
-            "experience_year"=>v::notEmpty(),
-            "supporting_documents"=>v::notEmpty(),
+            "pharmacy_name"=>v::notEmpty(),
+            "country"=>v::notEmpty(),
+            "street_address"=>v::notEmpty(),
+            "state"=>v::notEmpty(),
+            "city"=>v::notEmpty(),
+            "postal_code"=>v::notEmpty(),
+            "website_name"=>v::notEmpty(),
+            "price_list"=>v::notEmpty(),
         ]);
 
         if($this->validator->failed())
@@ -54,17 +58,21 @@ class DoctorController
        }
 
 
-        $data = $this->doctor->create([
+        $data = $this->pharmacy->create([
             'user_id' => CustomRequestHandler::getParam($request, "user_id"),
             'first_name' => CustomRequestHandler::getParam($request, "first_name"),
             'middle_initial' => CustomRequestHandler::getParam($request, "middle_initial"),
             'last_name' => CustomRequestHandler::getParam($request, "last_name"),
             'email' => CustomRequestHandler::getParam($request, "email"),
-            'birth_date' => CustomRequestHandler::getParam($request, "birth_date"),
             'contact_number' => CustomRequestHandler::getParam($request, "contact_number"),
-            'specialty' => CustomRequestHandler::getParam($request, "specialty"),
-            'experience_year' => CustomRequestHandler::getParam($request, "experience_year"),
-            'supporting_documents' => CustomRequestHandler::getParam($request, "supporting_documents"),
+            'pharmacy_name' => CustomRequestHandler::getParam($request, "pharmacy_name"),
+            'country' => CustomRequestHandler::getParam($request, "country"),
+            'street_address' => CustomRequestHandler::getParam($request, "street_address"),
+            'state' => CustomRequestHandler::getParam($request, "state"),
+            'city' => CustomRequestHandler::getParam($request, "city"),
+            'postal_code' => CustomRequestHandler::getParam($request, "postal_code"),
+            'website_name' => CustomRequestHandler::getParam($request, "website_name"),
+            'price_list' => CustomRequestHandler::getParam($request, "price_list"),
         ]);
 
         $responseMessage = $data;
@@ -73,15 +81,20 @@ class DoctorController
     public function update(Request $request,Response $response,$id)
     {
         $this->validator->validate($request,[
+            "user_id"=>v::notEmpty(),
             "first_name"=>v::notEmpty(),
             "middle_initial"=>v::notEmpty(),
             "last_name"=>v::notEmpty(),
             "email"=>v::notEmpty()->email(),
-            "birth_date"=>v::notEmpty(),
             "contact_number"=>v::notEmpty(),
-            "specialty"=>v::notEmpty(),
-            "experience_year"=>v::notEmpty(),
-            "supporting_documents"=>v::notEmpty(),
+            "pharmacy_name"=>v::notEmpty(),
+            "country"=>v::notEmpty(),
+            "street_address"=>v::notEmpty(),
+            "state"=>v::notEmpty(),
+            "city"=>v::notEmpty(),
+            "postal_code"=>v::notEmpty(),
+            "website_name"=>v::notEmpty(),
+            "price_list"=>v::notEmpty(),
         ]);
 
         if($this->validator->failed())
@@ -90,27 +103,32 @@ class DoctorController
             return $this->customResponse->is400Response($response,$responseMessage);
         }
 
-        $this->doctor->where(["id"=>$id])->update([
+        $this->pharmacy->where(["id"=>$id])->update([
+            'user_id' => CustomRequestHandler::getParam($request, "user_id"),
             'first_name' => CustomRequestHandler::getParam($request, "first_name"),
             'middle_initial' => CustomRequestHandler::getParam($request, "middle_initial"),
             'last_name' => CustomRequestHandler::getParam($request, "last_name"),
             'email' => CustomRequestHandler::getParam($request, "email"),
-            'birth_date' => CustomRequestHandler::getParam($request, "birth_date"),
             'contact_number' => CustomRequestHandler::getParam($request, "contact_number"),
-            'specialty' => CustomRequestHandler::getParam($request, "specialty"),
-            'experience_year' => CustomRequestHandler::getParam($request, "experience_year"),
-            'supporting_documents' => CustomRequestHandler::getParam($request, "supporting_documents"),
+            'pharmacy_name' => CustomRequestHandler::getParam($request, "pharmacy_name"),
+            'country' => CustomRequestHandler::getParam($request, "country"),
+            'street_address' => CustomRequestHandler::getParam($request, "street_address"),
+            'state' => CustomRequestHandler::getParam($request, "state"),
+            'city' => CustomRequestHandler::getParam($request, "city"),
+            'postal_code' => CustomRequestHandler::getParam($request, "postal_code"),
+            'website_name' => CustomRequestHandler::getParam($request, "website_name"),
+            'price_list' => CustomRequestHandler::getParam($request, "price_list"),
         ]);
 
-        $responseMessage = "doctor updated successfully";
+        $responseMessage = "pharmacy updated successfully";
         return $this->customResponse->is200Response($response,$responseMessage);
 
     }
 
     public function delete(Response $response,$id)
     {
-        $this->doctor->where(["id"=>$id])->delete();
-        $responseMessage = "doctor deleted successfully";
+        $this->pharmacy->where(["id"=>$id])->delete();
+        $responseMessage = "pharmacy deleted successfully";
         return $this->customResponse->is200Response($response,$responseMessage);
     }
 }

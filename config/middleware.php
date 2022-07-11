@@ -4,11 +4,11 @@ use Slim\App;
 
 return function (App $app)
 {
-    $app->getContainer()->get('settings');
+  $app->getContainer()->get('settings');
   $app->addRoutingMiddleware();
   $app->add(
       new \Tuupola\Middleware\JwtAuthentication([
-        "ignore"=>["/medsfinity-api/auth/login","/medsfinity-api/auth/register"],
+        "ignore"=>["/medsfinity-api/auth/login","/medsfinity-api/auth/register","/medsfinity-api/auth/token","/medsfinity-api/auth/reset-token"],
           "secret"=>$_ENV["JWT_SECRET"],
           "error"=>function($response,$arguments)
           {
